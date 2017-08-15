@@ -13,7 +13,7 @@ class AlterPetImagesTable extends Migration
      */
     public function up()
     {
-        Schema::create('pet_images', function (Blueprint $table) {
+        Schema::table('pet_images', function (Blueprint $table) {
             $table->integer('pet_id');
             $table->index('pet_id');
         });
