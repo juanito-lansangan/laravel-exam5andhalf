@@ -6,6 +6,7 @@ use App\Models\PetTag;
 use App\Models\PetCategory;
 use App\Repositories\Category\ICategoryRepository;
 use App\Repositories\Tag\ITagRepository;
+use Illuminate\Support\Facades\DB;
 
 class PetRepository implements IPetRepository
 {
@@ -26,9 +27,15 @@ class PetRepository implements IPetRepository
         ->first();
     }
     
-    public function findByTags($tags = array())
+    public function findByTags($tags)
     {
-        
+        $tags = explode(",", $tags);
+        return Pet::whereHas('petTags.tag', function($query) use ($tags) {
+            $query->whereIn('name', $tags);
+        })
+        ->with('petCategory.category')
+        ->with('petTags.tag')
+        ->get();
     }
     
     public function create(Request $request)
@@ -84,6 +91,9 @@ class PetRepository implements IPetRepository
     public function update(Request $request)
     {
         $pet = $this->findById($request->id);
+        if(!$pet) {
+            return 'Pet not found';
+        }
         $pet->name = $request->name;
         $petCategory = $pet->petCategory;
         return $this->save($request, $pet, $petCategory);
@@ -92,6 +102,9 @@ class PetRepository implements IPetRepository
     public function updateById(Request $request, $id)
     {
         $pet = $this->findById($id);
+        if(!$pet) {
+            return 'Pet not found';
+        }
         $pet->name = $request->name;
         $petCategory = $pet->petCategory;
         return $this->save($request, $pet, $petCategory);
@@ -104,16 +117,21 @@ class PetRepository implements IPetRepository
         $petTags = $this->attachTags($request->tags);
         $petCategory = $this->petCategoryInstance($category, $petCategory);
         $pet->petCategory()->save($petCategory);
+        
+        // delete previous tags of the selected pet
+        // to prevent duplicates
+        DB::table('pet_tags')->where('pet_id', $pet->id)->delete();
+        
         $pet->petTags()->saveMany($petTags);
-        return $petTags;
-        return [
-            'status' => 'ok',
-            'message' => 'pet successfully saved!',
-        ];
+
+        return $pet;
     }
     
     private function petCategoryInstance($category, $petCategory)
     {
+        if(!$petCategory) {
+            $petCategory = new PetCategory();
+        }
         $petCategory->category_id = $category;
         return $petCategory;
     }
@@ -121,12 +139,12 @@ class PetRepository implements IPetRepository
     public function delete($id)
     {
         $pet = $this->findById($id);
-        if(!$pet->delete()) {
-            return [
-                'status' => 'error',
-                'message' => 'error in saving pet'
-            ];
+        if(!$pet) {
+            return 'Pet not found';
         }
+        $pet->delete();
+        DB::table('pet_tags')->where('pet_id', $pet->id)->delete();
+        DB::table('pet_categories')->where('pet_id', $pet->id)->delete();
         
         return [
             'status' => 'ok',

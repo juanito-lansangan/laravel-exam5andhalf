@@ -18,7 +18,16 @@ class PetController extends Controller
     
     public function findById($id)
     {
-        return $this->repository->findById($id);
+        $pet = $this->repository->findById($id);
+        if(!$pet) {
+            return 'Pet not found';
+        }
+        return $pet;
+    }
+    
+    public function findByTags($tags)
+    {
+        return $this->repository->findByTags($tags);
     }
     
     public function create(Request $request)
