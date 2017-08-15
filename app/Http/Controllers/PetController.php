@@ -49,4 +49,9 @@ class PetController extends Controller
     {
         return $this->repository->delete($id);
     }
+    
+    public function uploadImage(Request $request, $id)
+    {
+        return $this->repository->uploadImage($request, $id);
+    }
 }

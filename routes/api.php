@@ -31,6 +31,8 @@ Route::prefix('pet')->group(function() {
     
     Route::post('{id}', 'PetController@updateById');
     
+    Route::post('{id}/upload', 'PetController@uploadImage');
+    
     Route::delete('{id}', 'PetController@delete');   
     
 });

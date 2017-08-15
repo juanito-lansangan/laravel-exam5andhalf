@@ -4,9 +4,12 @@ use Illuminate\Http\Request;
 use App\Models\Pet;
 use App\Models\PetTag;
 use App\Models\PetCategory;
+use App\Models\PetImage;
 use App\Repositories\Category\ICategoryRepository;
 use App\Repositories\Tag\ITagRepository;
 use Illuminate\Support\Facades\DB;
+// use Intervention\Image\ImageManagerStatic as Image;
+use Validator;
 
 class PetRepository implements IPetRepository
 {
@@ -24,6 +27,7 @@ class PetRepository implements IPetRepository
         return Pet::where('id', $id)
         ->with('petCategory.category')
         ->with('petTags.tag')
+        ->with('images')
         ->first();
     }
     
@@ -154,5 +158,28 @@ class PetRepository implements IPetRepository
     public function uploadImage(Request $request, $id)
     {
         
+        if(!$request->hasFile('file')) {
+          return [
+            'status' => 'error',
+            'message' => 'No files to upload'
+          ];
+        }
+        
+        $path = public_path() . '/uploads';
+        $file = $request->file('file');
+        $filename = uniqid(). '.' .$file->getClientOriginalExtension();
+        $file->move($path, $filename);
+        
+        // save to db;
+        $petImage = new PetImage();
+        $petImage->pet_id = $id;
+        $petImage->image_url = url('/') . '/uploads/' . $filename;
+        $petImage->save();
+        
+        return $petImage;
+        //cant use image intervention
+        // GD Library extension not available with this PHP installation.
+        // $image = Image::make($file->getRealPath());
+        // $image->save($destination);
     }
 }

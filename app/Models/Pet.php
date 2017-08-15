@@ -17,4 +17,9 @@ class Pet extends Model
     {
         return $this->hasMany('App\Models\PetTag', 'pet_id');
     }
+    
+    public function images()
+    {
+        return $this->hasMany('App\Models\PetImage', 'pet_id');
+    }
 }
