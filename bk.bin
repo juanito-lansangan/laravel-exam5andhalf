@@ -1,0 +1,20 @@
+# Laravel Take Home Exercise
+Copyrights (c) [5.5 Degrees](http://www.5andhalf.com)
+
+## HOW TO START?
+1. Open terminal and execute `./README.sh` 
+2. Click `Run Project`
+3. Open given url
+4. Read Test Document
+5. ...
+100. START CODING.
+
+## INFO
+You can test / develop enpoints using POSTMAN  
+You can access your database through [PHPMYADMIN](http://$C9_HOSTNAME/phpmyadmin)  
+    - Username: $C9_USER  
+    - Password: (BLANK / NO PASSWORD)  
+
+### Framework Documentation
+Documentation for the framework can be found on the
+[Laravel website](http://laravel.com/docs).
