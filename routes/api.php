@@ -19,14 +19,28 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 
 Route::resource('document', 'Document');
 
-Route::post('pet', 'PetController@create');
+Route::prefix('pet')->group(function() {
+    
+    Route::post('', 'PetController@create');
+    
+    Route::put('', 'PetController@update');
+    
+    Route::get('findByTags/{tags}', 'PetController@findByTags');
+    
+    Route::get('{id}', 'PetController@findById');
+    
+    Route::post('{id}', 'PetController@updateById');
+    
+    Route::delete('{id}', 'PetController@delete');   
+    
+});
 
-Route::put('pet/', 'PetController@update');
-
-Route::get('findByTags/{tags}', 'PetController@findByTags');
-
-Route::get('pet/{id}', 'PetController@findById');
-
-Route::post('pet/{id}', 'PetController@updateById');
-
-Route::delete('pet/{id}', 'PetController@delete');
+Route::prefix('store')->group(function() {
+    
+    Route::post('order', 'OrderController@create');
+    
+    Route::get('order/{id}', 'OrderController@findById');
+    
+    Route::delete('order/{id}', 'OrderController@delete');    
+    
+});

@@ -16,6 +16,27 @@ class OrderRepository implements IOrderRepository
     public function create(Request $request)
     {
         $order = new Order();
+        $order->shipping_date = $request->shipping_date;
+        $order->complete = $request->complete;
+        $details = $this->detail($request->petId);
+        $order->save();
+        $order->details()->saveMany($details);
+        return $order;
+    }
+    
+    private function detail($pets)
+    {
+        $orderedPets = [];
+        if(count($pets) == 0) {
+            return $orderedPets;
+        }
+        
+        foreach($pets as $pet) {
+            $orderDetail = new OrderDetail();
+            $orderDetail->pet_id = $pet;
+            $orderedPets[] = $orderDetail;
+        }
+        return $orderedPets;
     }
     
     public function delete($id)

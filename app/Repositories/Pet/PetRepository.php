@@ -123,7 +123,6 @@ class PetRepository implements IPetRepository
         DB::table('pet_tags')->where('pet_id', $pet->id)->delete();
         
         $pet->petTags()->saveMany($petTags);
-
         return $pet;
     }
     

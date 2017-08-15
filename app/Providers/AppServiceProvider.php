@@ -29,5 +29,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind('App\Repositories\Pet\IPetRepository', 'App\Repositories\Pet\PetRepository');
         $this->app->bind('App\Repositories\Category\ICategoryRepository', 'App\Repositories\Category\CategoryRepository');
         $this->app->bind('App\Repositories\Tag\ITagRepository', 'App\Repositories\Tag\TagRepository');
+        $this->app->bind('App\Repositories\Order\IOrderRepository', 'App\Repositories\Order\OrderRepository');
+        
     }
 }
