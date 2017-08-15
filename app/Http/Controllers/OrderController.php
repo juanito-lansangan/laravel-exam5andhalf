@@ -32,6 +32,6 @@ class OrderController extends Controller
     
     public function delete($id)
     {
-        $order = $this->repository->delete($id);
+        return $this->repository->delete($id);
     }
 }

@@ -10,7 +10,13 @@ class OrderRepository implements IOrderRepository
 {
     public function findById($id)
     {
-        return Order::find($id);
+        $order = Order::find($id);
+        $shifmentDate = Carbon::parse($order->shipping_date);
+        if(Carbon::now()->gt($shifmentDate)) {
+            $order->status = 'delivered';
+            $order->save();
+        }
+        return $order;
     }
     
     public function create(Request $request)
@@ -42,9 +48,10 @@ class OrderRepository implements IOrderRepository
     public function delete($id)
     {
         $order = $this->findById($id);
-        if(Carbon::now()->gt($order->shipping_date)) {
+        $shifmentDate = Carbon::parse($order->shipping_date);
+        if(Carbon::now()->gt($shifmentDate)) {
             return 'Failed to delete, order can be delete before shipping date!';
         }
-        $order->delete();
+        return $order->delete();
     }
 }
