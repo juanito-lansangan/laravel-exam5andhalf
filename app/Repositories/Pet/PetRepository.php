@@ -31,6 +31,11 @@ class PetRepository implements IPetRepository
         ->first();
     }
 
+    public function findByIdWhereIn($ids)
+    {
+      return Pet::whereIn('id', $ids)->get();
+    }
+
     public function findByTags($tags)
     {
         $tags = explode(",", $tags);

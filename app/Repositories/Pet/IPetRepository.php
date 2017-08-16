@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 interface IPetRepository
 {
     public function findById($id);
+    public function findByIdWhereIn($ids);
     public function findByTags($tags);
     public function create(Request $request);
     public function update(Request $request);
