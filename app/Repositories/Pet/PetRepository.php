@@ -15,13 +15,13 @@ class PetRepository implements IPetRepository
 {
     private $categoryRepo;
     private $tagRepo;
-    
+
     public function __construct(ICategoryRepository $repo, ITagRepository $tagRepo)
     {
         $this->categoryRepo = $repo;
         $this->tagRepo = $tagRepo;
     }
-    
+
     public function findById($id)
     {
         return Pet::where('id', $id)
@@ -30,7 +30,7 @@ class PetRepository implements IPetRepository
         ->with('images')
         ->first();
     }
-    
+
     public function findByTags($tags)
     {
         $tags = explode(",", $tags);
@@ -41,7 +41,7 @@ class PetRepository implements IPetRepository
         ->with('petTags.tag')
         ->get();
     }
-    
+
     public function create(Request $request)
     {
         $pet = new Pet();
@@ -49,7 +49,7 @@ class PetRepository implements IPetRepository
         $petCategory = new PetCategory();
         return $this->save($request, $pet, $petCategory);
     }
-    
+
     private function attachCategory($name)
     {
         $category = $this->categoryRepo->findByName($name);
@@ -59,29 +59,32 @@ class PetRepository implements IPetRepository
         $category = $this->categoryRepo->create($name);
         return $category->id;
     }
-    
+
     /**
-     * I assume the $tags param is delimited by ","
-     * e.g tag1,tag2,tag3....
+     * You can use array of tags[0] = Tag1, tags[1] = Tag2
+     * or tags = tag1,tag2,tag3....
      */
     private function attachTags($tags)
     {
-        $tags = explode(",", $tags);
+        if(!is_array($tags)) {
+          $tags = explode(",", $tags);
+        }
+
         $tagsToAttach = [];
-        
+
         if(count($tags) == 0) {
             return $tagsToAttach;
         }
-        
+
         foreach($tags as $tag) {
             $tagsToAttach[] = new PetTag([
                 'tag_id' => $this->addTag($tag)
             ]);
         }
-        
+
         return $tagsToAttach;
     }
-    
+
     private function addTag($name)
     {
         $tag = $this->tagRepo->findByName($name);
@@ -91,7 +94,7 @@ class PetRepository implements IPetRepository
         $tag = $this->tagRepo->create($name);
         return $tag->id;
     }
-    
+
     public function update(Request $request)
     {
         $pet = $this->findById($request->id);
@@ -102,7 +105,7 @@ class PetRepository implements IPetRepository
         $petCategory = $pet->petCategory;
         return $this->save($request, $pet, $petCategory);
     }
-    
+
     public function updateById(Request $request, $id)
     {
         $pet = $this->findById($id);
@@ -113,7 +116,7 @@ class PetRepository implements IPetRepository
         $petCategory = $pet->petCategory;
         return $this->save($request, $pet, $petCategory);
     }
-    
+
     private function save(Request $request, $pet, $petCategory)
     {
         $pet->save();
@@ -121,15 +124,15 @@ class PetRepository implements IPetRepository
         $petTags = $this->attachTags($request->tags);
         $petCategory = $this->petCategoryInstance($category, $petCategory);
         $pet->petCategory()->save($petCategory);
-        
+
         // delete previous tags of the selected pet
         // to prevent duplicates
         DB::table('pet_tags')->where('pet_id', $pet->id)->delete();
-        
+
         $pet->petTags()->saveMany($petTags);
         return $pet;
     }
-    
+
     private function petCategoryInstance($category, $petCategory)
     {
         if(!$petCategory) {
@@ -138,7 +141,7 @@ class PetRepository implements IPetRepository
         $petCategory->category_id = $category;
         return $petCategory;
     }
-    
+
     public function delete($id)
     {
         $pet = $this->findById($id);
@@ -148,34 +151,34 @@ class PetRepository implements IPetRepository
         $pet->delete();
         DB::table('pet_tags')->where('pet_id', $pet->id)->delete();
         DB::table('pet_categories')->where('pet_id', $pet->id)->delete();
-        
+
         return [
             'status' => 'ok',
             'message' => 'pet successfully deleted!'
         ];
     }
-    
+
     public function uploadImage(Request $request, $id)
     {
-        
+
         if(!$request->hasFile('file')) {
           return [
             'status' => 'error',
             'message' => 'No files to upload'
           ];
         }
-        
+
         $path = public_path() . '/uploads';
         $file = $request->file('file');
         $filename = uniqid(). '.' .$file->getClientOriginalExtension();
         $file->move($path, $filename);
-        
+
         // save to db;
         $petImage = new PetImage();
         $petImage->pet_id = $id;
         $petImage->image_url = url('/') . '/uploads/' . $filename;
         $petImage->save();
-        
+
         return $petImage;
         //cant use image intervention
         // GD Library extension not available with this PHP installation.
